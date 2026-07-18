@@ -1,5 +1,6 @@
 import hashlib
 import os
+from config import SYSTEM_PERMISSIONS
 
 class User:
     #initiating variables, giving none to password_hash and salt to be able to make new usures and load existing ones fro json files
@@ -39,7 +40,7 @@ class User:
         #Compare the guess hash with our saved hash string
         return self.password_hash == guess_hash_bytes.hex()
     
-# --- TESTING BLOCK ---
+'''# --- TESTING BLOCK ---
 if __name__ == "__main__":
     print("--- Testing Day 1: User Security Core ---")
     
@@ -67,4 +68,57 @@ if __name__ == "__main__":
     right_guess = "SuperSecretBankPassword123"
     print(f"Testing correct password '{right_guess}':")
     is_valid = alice.check_password(right_guess)
-    print(f"Access Granted? {is_valid} (Expected: True)")
+    print(f"Access Granted? {is_valid} (Expected: True)") '''
+
+class Resource:
+    def __init__(self,name,parent_resource=None):
+        self.name=name
+        self.parent_resource=parent_resource
+
+#check_hierarchy_permission function to be moved later 
+
+def check_hierarchy_permission(role,resource,permission_map):
+    if resource is None:
+        return False
+    else:
+        exact_role = permission_map.get(role, [])
+        if resource.name in exact_role:
+            return True
+        else:
+            return check_hierarchy_permission(role,resource.parent_resource,permission_map)
+        
+'''# --- TESTING BLOCK ---
+if __name__ == "__main__":
+    from config import SYSTEM_PERMISSIONS
+    print("===Resource Hierarchies ===")
+    
+    # 1. Create a deep hierarchy for the Intern's Sandbox
+    sandbox_root = Resource("Local_Sandbox_Testing", parent_resource=None)
+    project_folder = Resource("Alpha_Project_Files", parent_resource=sandbox_root)
+    secret_mock_data = Resource("Alpha_Mock_DB", parent_resource=project_folder)
+    
+    # 2. Create a deep hierarchy for production data
+    prod_root = Resource("Production_Cloud_Cluster", parent_resource=None)
+    customer_db = Resource("Customer_Financial_Profiles", parent_resource=prod_root)
+    
+    # 3. Create our users matching the roles in config.py
+    intern = User(username="intern_sam", role="Support_Intern")
+    devops = User(username="devops_dan", role="DevOps_Engineer")
+    
+    print("\n--- Test Scenario 1: Intern accessing a deep subfolder in Sandbox ---")
+    has_access = check_hierarchy_permission(intern.role, secret_mock_data, SYSTEM_PERMISSIONS)
+    print(f"Can Intern access Alpha_Mock_DB? {has_access} (Expected: True)")
+    
+    print("\n--- Test Scenario 2: Intern trying to sneak into Production ---")
+    has_access = check_hierarchy_permission(intern.role, customer_db, SYSTEM_PERMISSIONS)
+    print(f"Can Intern access Customer_Financial_Profiles? {has_access} (Expected: False)")
+    
+    print("\n--- Test Scenario 3: DevOps accessing Production ---")
+    has_access = check_hierarchy_permission(devops.role, customer_db, SYSTEM_PERMISSIONS)
+    print(f"Can DevOps access Customer_Financial_Profiles? {has_access} (Expected: True)")'''
+
+class StorageManager:
+    def save_to_json(data,filename):
+        pass
+    def load_from_json(filename):
+        pass
